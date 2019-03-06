@@ -1,0 +1,16 @@
+
+server.port: 5000
+
+# Source database must be defined with environment variables
+source_db: ${SOURCE_DB}
+source_user: ${SOURCE_USER}
+source_server: ${SOURCE_SERVER}
+source_pw: ${SOURCE_PW}
+
+# Target database defaults to local Postgres
+# WARNING: ALL TARGET TABLES WILL BE TRUNCATED BEFORE COPYING FROM SOURCE
+target_db: ${TARGET_DB}
+target_user: ${TARGET_USER}
+target_server: ${TARGET_SERVER}
+target_pw: ${TARGET_PW}
+
