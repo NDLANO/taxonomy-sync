@@ -36,6 +36,13 @@ class DatabaseCopierService(@Qualifier("source") val sourceDatabase: DataSource,
         return report
     }
 
+    private fun truncateTargetTables(report: CopyReport) {
+        tables.reversed().forEach { table ->
+            report.log.add("Truncating target table: $table")
+            targetTemplate.execute("truncate table $table cascade;")
+        }
+    }
+
     private fun copyTables(report: CopyReport) {
         tables.forEach { table ->
             var rowCount = 0
@@ -43,30 +50,31 @@ class DatabaseCopierService(@Qualifier("source") val sourceDatabase: DataSource,
             report.log.add("Processing table: $table...")
             sourceTemplate.query("select * from $table") { resultSet: ResultSet ->
                 val metaData = resultSet.metaData
-                var valuesString = "("
+                var valuesString = ""
                 for (index in 1..metaData.columnCount) {
                     valuesString += stringifyColumnValue(metaData, index, resultSet)
-                    if (index < metaData.columnCount)
+                    if (index < metaData.columnCount) {
                         valuesString += ","
+                    }
                 }
-                values.add("$valuesString)")
+                values.add("($valuesString)")
                 rowCount++
                 if (values.size == BATCH_SIZE) {
                     insertValues(table, values)
                     values.clear()
                 }
             }
-            if (values.size > 0) {
-                insertValues(table, values)
-            }
+            insertValues(table, values)
             report.log.add("$rowCount rows copied")
         }
     }
 
-    private fun truncateTargetTables(report: CopyReport) {
-        tables.reversed().forEach { table ->
-            report.log.add("Truncating target table: $table")
-            targetTemplate.execute("truncate table $table cascade;")
+    private fun copySequences(report: CopyReport) {
+        sequences.forEach { sequence ->
+            val table = sequence.substring(0, sequence.indexOf("_id"))
+            val maxId = sourceTemplate.queryForObject("select max(id) from $table", Int::class.java) ?: 1
+            report.log.add("Setting sequence $sequence to $maxId")
+            targetTemplate.execute("select setval('$sequence', $maxId);")
         }
     }
 
@@ -78,31 +86,28 @@ class DatabaseCopierService(@Qualifier("source") val sourceDatabase: DataSource,
         }
     }
 
-    private fun convertColumnToTimestampFunction(resultSet: ResultSet, columnIndex: Int): String {
+    private fun convertColumnToTimestampFunction(resultSet: ResultSet, columnIndex: Int): String? {
         val timestamp = resultSet.getTimestamp(columnIndex)
-        return "to_timestamp('$timestamp', 'YYYY-MM-DD TT:MI:SS.US')"
+        return if (timestamp == null) null else "to_timestamp('$timestamp', 'YYYY-MM-DD TT:MI:SS.US')"
     }
 
-    private fun convertColumnToString(resultSet: ResultSet, columnIndex: Int): String {
-        return "'${escapeSingleQuotes(resultSet.getString(columnIndex))}'"
+    private fun convertColumnToString(resultSet: ResultSet, columnIndex: Int): String? {
+        val value = resultSet.getString(columnIndex)
+        return if (value == null) null else "'${escapeSingleQuotes(value)}'"
     }
 
-    private fun escapeSingleQuotes(value: String?) = value?.replace("'", "''")
-
-    private fun copySequences(report: CopyReport) {
-        sequences.forEach { sequence ->
-            val table = sequence.substring(0, sequence.indexOf("_id"))
-            val maxId = sourceTemplate.queryForObject("select max(id) from $table", Int::class.java) ?: 1
-            report.log.add("Setting sequence $sequence to $maxId")
-            targetTemplate.execute("select setval('$sequence', $maxId);")
-        }
+    private fun escapeSingleQuotes(value: String): String {
+        return value.replace("'", "''")
     }
 
     private fun insertValues(table: String, values: ArrayList<String>) {
-        var insert = "insert into $table values "
-        values.forEachIndexed { index, value ->
-            insert += (if (index < values.size - 1) "$value, " else "$value;")
+        if (values.size > 0) {
+            var insert = "insert into $table values "
+            values.forEachIndexed { index, value ->
+                insert += value
+                insert += (if (index < values.size - 1) ", " else ";")
+            }
+            targetTemplate.update(insert)
         }
-        targetTemplate.update(insert)
     }
 }
