@@ -1,4 +1,4 @@
-package no.ndla.taxonomysync
+package no.ndla.taxonomysync.dtos
 
 class CopyReport {
 

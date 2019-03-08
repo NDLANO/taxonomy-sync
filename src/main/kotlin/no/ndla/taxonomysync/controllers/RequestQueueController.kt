@@ -1,7 +1,7 @@
 package no.ndla.taxonomysync.controllers
 
-import no.ndla.taxonomysync.dtos.RequestQueueEnqueueResponse
-import no.ndla.taxonomysync.dtos.TaxonomyRequest
+import no.ndla.taxonomysync.dtos.EnqueueResponse
+import no.ndla.taxonomysync.dtos.TaxonomyApiRequest
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -18,8 +18,8 @@ class RequestQueueController {
     }
 
     @PostMapping("/queue")
-    fun enqueue(request: TaxonomyRequest): RequestQueueEnqueueResponse {
-        return RequestQueueEnqueueResponse()
+    fun enqueue(apiRequest: TaxonomyApiRequest): EnqueueResponse {
+        return EnqueueResponse()
     }
 
     @PostMapping("/process")

@@ -1,6 +1,6 @@
 package no.ndla.taxonomysync.controllers
 
-import no.ndla.taxonomysync.CopyReport
+import no.ndla.taxonomysync.dtos.CopyReport
 import no.ndla.taxonomysync.services.DatabaseCopierService
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.PostMapping
