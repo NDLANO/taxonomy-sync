@@ -1,15 +1,21 @@
 package no.ndla.taxonomysync.controllers
 
+import com.amazonaws.services.dynamodbv2.document.Table
 import no.ndla.taxonomysync.dtos.EnqueueResponse
 import no.ndla.taxonomysync.dtos.TaxonomyApiRequest
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import no.ndla.taxonomysync.services.DynamoDbService
+import java.util.HashSet
+import com.amazonaws.services.dynamodbv2.document.Item
+import com.amazonaws.services.dynamodbv2.document.PutItemOutcome
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import org.springframework.web.bind.annotation.*
+import javax.annotation.PostConstruct
+
 
 @RestController
 @RequestMapping("requests")
-class RequestQueueController {
+class RequestQueueController(val dynamoDbService: DynamoDbService) {
 
 
     @GetMapping("/queue")
@@ -18,14 +24,14 @@ class RequestQueueController {
     }
 
     @PostMapping("/queue")
-    fun enqueue(apiRequest: TaxonomyApiRequest): EnqueueResponse {
-        return EnqueueResponse()
+    @ResponseBody
+    fun enqueue(@RequestBody apiRequest: TaxonomyApiRequest): PutItemOutcome {
+        return dynamoDbService.getOutcome(apiRequest)
     }
 
     @PostMapping("/process")
     fun process() {
 
     }
-
 
 }

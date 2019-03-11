@@ -13,3 +13,5 @@ target_user: ${TARGET_USER}
 target_server: ${TARGET_SERVER}
 target_pw: ${TARGET_PW}
 
+queue_server: ${QUEUE_SERVER}
+queue_region: ${QUEUE_REGION}
