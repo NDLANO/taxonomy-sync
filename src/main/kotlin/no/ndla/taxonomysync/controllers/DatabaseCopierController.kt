@@ -20,7 +20,7 @@ class DatabaseCopierController(val databaseCopierService: DatabaseCopierService,
 
     @GetMapping("/insertmock")
     fun makeStuff():CopyReport{
-        return dynamoDbService.createTable("taxosync")
+        return dynamoDbService.createTable()
     }
 
 
