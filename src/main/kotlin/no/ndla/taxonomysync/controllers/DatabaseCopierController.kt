@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.ResponseBody
 
 
-@Controller("/database")
+@Controller("database")
 class DatabaseCopierController(val databaseCopierService: DatabaseCopierService) {
 
 
