@@ -15,6 +15,7 @@ class DatabaseCopierController(val databaseCopierService: DatabaseCopierService,
     @PostMapping("/resetdraft")
     @ResponseBody
     fun resetDraftDatabase(): CopyReport {
+        //todo clear dynamo db
         return databaseCopierService.copySourceToTarget()
     }
 
