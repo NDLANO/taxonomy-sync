@@ -25,7 +25,6 @@ class RequestQueueService(config: RequestQueueConfiguration, private val request
 
     init {
         requestQueue = LinkedBlockingQueue<TaxonomyApiRequest>()
-        startAutomaticEnqueuing()
     }
 
 
