@@ -2,12 +2,11 @@ package no.ndla.taxonomysync.services
 
 import no.ndla.taxonomysync.configurations.RequestQueueConfiguration
 import no.ndla.taxonomysync.dtos.TaxonomyApiRequest
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
+import org.springframework.http.*
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
+import java.lang.RuntimeException
+import java.net.URI
 
 @Service
 class TaxonomyApiRequestPoster(config: RequestQueueConfiguration) {
@@ -21,7 +20,16 @@ class TaxonomyApiRequestPoster(config: RequestQueueConfiguration) {
         val httpHeaders = HttpHeaders()
         httpHeaders.contentType = MediaType.APPLICATION_JSON
 
-        return restTemplate.postForEntity(syncEndpoint + request.path, HttpEntity(request.body, httpHeaders), String::class.java)
+        return restTemplate.exchange(URI(syncEndpoint + request.path), getMethod(request.method), HttpEntity(request.body, httpHeaders), String::class.java)
+    }
+
+    private fun getMethod(method: String): HttpMethod {
+        return when (method) {
+            "PUT" -> HttpMethod.PUT
+            "POST" -> HttpMethod.POST
+            "DELETE" -> HttpMethod.DELETE
+            else -> throw RuntimeException("Unsupported method")
+        }
     }
 
 }

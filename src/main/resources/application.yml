@@ -1,5 +1,6 @@
 
-server.port: 5001
+server.port: 5003
+
 
 # Source database must be defined with environment variables
 source_db: ${SOURCE_DB}
@@ -18,5 +19,5 @@ queue_region: ${QUEUE_REGION}
 
 requestqueue:
   enabled: false
-  target-host: localhost:5000
+  target-host: ${SYNC_TARGET:null}
   wait-time-between-retries: 300000
