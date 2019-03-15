@@ -14,7 +14,7 @@ const val DYNAMODB_TABLE_NAME = "taxosync"
 @Service
 class DynamoDbService(val sourceDynamoDatabase: DynamoDB) {
 
-    val table: Table = sourceDynamoDatabase.getTable(DYNAMODB_TABLE_NAME)
+    var table: Table = sourceDynamoDatabase.getTable(DYNAMODB_TABLE_NAME)
 
     fun createTable(): CopyReport {
         val report = CopyReport()
@@ -39,7 +39,7 @@ class DynamoDbService(val sourceDynamoDatabase: DynamoDB) {
 
         val table = sourceDynamoDatabase.createTable(request)
         table.waitForActive()
-
+        this.table = table
         return report
     }
 
@@ -66,5 +66,11 @@ class DynamoDbService(val sourceDynamoDatabase: DynamoDB) {
         }
         taxonomyQueue.sortBy { it.timestamp }
         return taxonomyQueue
+    }
+
+    fun deleteAllRequests() {
+        table.delete()
+        table.waitForDelete()
+        createTable()
     }
 }
