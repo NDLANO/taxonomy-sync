@@ -35,7 +35,7 @@ class RequestQueueService(config: RequestQueueConfiguration, private val request
     }
 
 
-    private fun startAutomaticEnqueuing() {
+    fun startAutomaticEnqueuing() {
         autoEnqueueingRunning = true
         processingThread = Thread {
 
@@ -69,6 +69,7 @@ class RequestQueueService(config: RequestQueueConfiguration, private val request
 
         }
         processingThread.start()
+
     }
 
 

@@ -26,6 +26,7 @@ class RequestQueueController(val dynamoDbService: DynamoDbService, val requestQu
     @PostMapping("/process")
     fun process() {
         val taxonomyQueue = dynamoDbService.getTaxonomyQueue()
+        requestQueueService.startAutomaticEnqueuing()
         taxonomyQueue.forEach(requestQueueService::add)
         while(true){
             if(requestQueueService.status.currentRequest == null && requestQueueService.status.queuedItems == 0){
