@@ -25,16 +25,25 @@ target-queue:
 ---
 
 spring:
-  profiles: dev
+  profiles: local
 
 server.port: 5001
 
 dynamodb:
-  table-name: taxosync
+  table-name: taxonomy-sync-local
+
+---
+
+spring:
+  profiles: dev
+
+dynamodb:
+  table-name: taxonomy-sync-dev
 
 ---
 
 spring:
   profiles: test
+    table-name: taxonomy-sync-test
 
 ---
