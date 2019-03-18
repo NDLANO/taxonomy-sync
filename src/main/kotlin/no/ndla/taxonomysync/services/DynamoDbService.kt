@@ -68,7 +68,7 @@ class DynamoDbService(val sourceDynamoDatabase: DynamoDB) {
         return taxonomyQueue
     }
 
-    fun deleteAllRequests() {
+    fun resetTable() {
         table.delete()
         table.waitForDelete()
         createTable()

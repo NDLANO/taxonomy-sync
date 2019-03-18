@@ -30,7 +30,7 @@ class RequestQueueController(val dynamoDbService: DynamoDbService, val requestQu
         taxonomyQueue.forEach(requestQueueService::add)
         while(true){
             if(requestQueueService.status.currentRequest == null && requestQueueService.status.queuedItems == 0){
-                dynamoDbService.deleteAllRequests()
+                dynamoDbService.resetTable()
                 requestQueueService.stop()
                 break
             }else{
