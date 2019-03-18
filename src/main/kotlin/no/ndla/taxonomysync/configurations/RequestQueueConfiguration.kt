@@ -4,9 +4,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-@ConfigurationProperties(prefix = "requestqueue")
+@ConfigurationProperties(prefix = "target-queue")
 class RequestQueueConfiguration {
-    var enabled: Boolean = false
-    lateinit var targetHost: String
+    lateinit var hostUrl: String
     var waitTimeBetweenRetries: Long = 0
 }

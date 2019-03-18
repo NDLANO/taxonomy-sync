@@ -1,23 +1,40 @@
 
 server.port: 5000
 
-
 # Source database must be defined with environment variables
-source_db: ${SOURCE_DB}
-source_user: ${SOURCE_USER}
+source_db: taxonomy
+source_user: sa
 source_server: ${SOURCE_SERVER}
 source_pw: ${SOURCE_PW}
 
 # WARNING: ALL TARGET TABLES WILL BE TRUNCATED BEFORE COPYING FROM SOURCE
-target_db: ${TARGET_DB}
-target_user: ${TARGET_USER}
+target_db: taxonomy
+target_user: sa
 target_server: ${TARGET_SERVER}
 target_pw: ${TARGET_PW}
 
-queue_server: ${QUEUE_SERVER}
-queue_region: ${QUEUE_REGION}
+dynamodb:
+  server: ${QUEUE_SERVER}
+  region: eu-central-1
+  table-name: taxo
 
-requestqueue:
-  enabled: false
-  target-host: ${SYNC_TARGET:null}
+target-queue:
+  host-url: ${SYNC_TARGET}
   wait-time-between-retries: 300000
+
+---
+
+spring:
+  profiles: dev
+
+server.port: 5001
+
+dynamodb:
+  table-name: taxosync
+
+---
+
+spring:
+  profiles: test
+
+---

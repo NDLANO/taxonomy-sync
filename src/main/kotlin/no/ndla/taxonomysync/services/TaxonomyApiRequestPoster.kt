@@ -12,7 +12,7 @@ import java.net.URI
 @Service
 class TaxonomyApiRequestPoster(config: RequestQueueConfiguration) {
 
-    private val syncEndpoint: String = "http://" + config.targetHost
+    private val syncEndpoint: String = "http://" + config.hostUrl
     private val restTemplate: RestTemplate = RestTemplate()
     var logger = LoggerFactory.getLogger(TaxonomyApiRequestPoster::class.java)
 

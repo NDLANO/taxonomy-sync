@@ -5,6 +5,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
 import com.amazonaws.services.dynamodbv2.document.DynamoDB
 import com.amazonaws.services.dynamodbv2.model.*
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
@@ -13,16 +14,18 @@ import java.util.ArrayList
 import javax.annotation.PostConstruct
 
 @Configuration
-class DynamoDbConfiguration(val env: Environment) {
+@ConfigurationProperties(prefix = "dynamodb")
+class DynamoDbConfiguration {
+
+    lateinit var server: String
+    lateinit var region: String
+    lateinit var tableName: String
 
     @Bean
     fun sourceDynamoDatabase(): DynamoDB{
-        val client = AmazonDynamoDBClientBuilder
+        return DynamoDB(AmazonDynamoDBClientBuilder
                 .standard()
-                .withEndpointConfiguration(
-                    AwsClientBuilder.EndpointConfiguration(env.getRequiredProperty("queue_server"),
-                        env.getRequiredProperty("queue_region"))
-                ).build()
-        return DynamoDB(client)
+                .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(server,region))
+                .build())
     }
 }
