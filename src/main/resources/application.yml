@@ -29,6 +29,9 @@ spring:
 
 server.port: 5001
 
+target-queue:
+  wait-time-between-retries: 10000
+
 dynamodb:
   table-name: taxonomy-sync-local
 
