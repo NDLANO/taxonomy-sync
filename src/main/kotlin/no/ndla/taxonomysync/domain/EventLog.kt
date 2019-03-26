@@ -1,6 +1,6 @@
 package no.ndla.taxonomysync.domain
 
-class CopyReport {
+class EventLog {
 
     val log = mutableListOf<String>()
 }

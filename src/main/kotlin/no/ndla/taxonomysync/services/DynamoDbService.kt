@@ -5,7 +5,7 @@ import com.amazonaws.services.dynamodbv2.document.Item
 import com.amazonaws.services.dynamodbv2.document.Table
 import com.amazonaws.services.dynamodbv2.model.*
 import no.ndla.taxonomysync.configurations.DynamoDbConfiguration
-import no.ndla.taxonomysync.domain.CopyReport
+import no.ndla.taxonomysync.domain.EventLog
 import no.ndla.taxonomysync.domain.TaxonomyApiRequest
 import org.springframework.stereotype.Service
 import java.util.*
@@ -16,8 +16,8 @@ class DynamoDbService(val sourceDynamoDatabase: DynamoDB, val config: DynamoDbCo
 
     var table: Table = sourceDynamoDatabase.getTable(config.tableName)
 
-    fun createTable(): CopyReport {
-        val report = CopyReport()
+    fun createTable(): EventLog {
+        val report = EventLog()
         report.log.add("Database opprettet")
         report.log.add("Navn = ${config.tableName}")
 

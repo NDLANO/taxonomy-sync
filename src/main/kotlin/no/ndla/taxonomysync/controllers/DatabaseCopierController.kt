@@ -1,7 +1,7 @@
 package no.ndla.taxonomysync.controllers
 
 import no.ndla.taxonomysync.configurations.RequestQueueConfiguration
-import no.ndla.taxonomysync.domain.CopyReport
+import no.ndla.taxonomysync.domain.EventLog
 import no.ndla.taxonomysync.services.DatabaseCopierService
 import no.ndla.taxonomysync.services.DynamoDbService
 import org.springframework.web.bind.annotation.*
@@ -17,13 +17,13 @@ class DatabaseCopierController(val databaseCopierService: DatabaseCopierService,
 
     @PostMapping("/resetdraft")
     @ResponseBody
-    fun resetDraftDatabase(): CopyReport {
+    fun resetDraftDatabase(): EventLog {
         dynamoDbService.resetTable()
         return databaseCopierService.copySourceToTarget()
     }
 
     @GetMapping("/insertmock")
-    fun makeStuff(): CopyReport {
+    fun makeStuff(): EventLog {
         //TODO remove after everything works. This is only for mocking purposes.
         return dynamoDbService.createTable()
     }

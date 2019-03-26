@@ -81,6 +81,8 @@ class RequestQueueService(config: RequestQueueConfiguration, private val request
         }
     }
 
+    fun isProcessingThreadRunning() :Boolean = processingThread != null && processingThread!!.isAlive
+
     private fun getRequestQueueSizeExcludingPoisonPills(): Int {
         return requestQueue.count { it is TaxonomyApiRequest }
     }
