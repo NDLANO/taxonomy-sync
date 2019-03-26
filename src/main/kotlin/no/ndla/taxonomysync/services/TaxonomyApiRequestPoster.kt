@@ -1,20 +1,18 @@
 package no.ndla.taxonomysync.services
 
 import no.ndla.taxonomysync.configurations.RequestQueueConfiguration
-import no.ndla.taxonomysync.dtos.Authentication
-import no.ndla.taxonomysync.dtos.AuthenticationRequest
-import no.ndla.taxonomysync.dtos.TaxonomyApiRequest
+import no.ndla.taxonomysync.domain.Authentication
+import no.ndla.taxonomysync.domain.AuthenticationRequest
+import no.ndla.taxonomysync.domain.TaxonomyApiRequest
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.*
-import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestTemplate
 import java.lang.RuntimeException
 import java.net.URI
 import java.time.Instant
-import java.util.ArrayList
 
 @Service
 class TaxonomyApiRequestPoster(val config: RequestQueueConfiguration) {

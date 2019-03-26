@@ -5,8 +5,8 @@ import com.amazonaws.services.dynamodbv2.document.Item
 import com.amazonaws.services.dynamodbv2.document.Table
 import com.amazonaws.services.dynamodbv2.model.*
 import no.ndla.taxonomysync.configurations.DynamoDbConfiguration
-import no.ndla.taxonomysync.dtos.CopyReport
-import no.ndla.taxonomysync.dtos.TaxonomyApiRequest
+import no.ndla.taxonomysync.domain.CopyReport
+import no.ndla.taxonomysync.domain.TaxonomyApiRequest
 import org.springframework.stereotype.Service
 import java.util.*
 

@@ -1,6 +1,6 @@
 package no.ndla.taxonomysync.configurations
 
-import no.ndla.taxonomysync.dtos.Authentication
+import no.ndla.taxonomysync.domain.Authentication
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 

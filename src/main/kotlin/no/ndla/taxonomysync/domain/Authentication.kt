@@ -1,4 +1,4 @@
-package no.ndla.taxonomysync.dtos
+package no.ndla.taxonomysync.domain
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

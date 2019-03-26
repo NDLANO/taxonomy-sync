@@ -3,9 +3,9 @@ package no.ndla.taxonomysync.services
 
 import no.ndla.taxonomysync.configurations.RequestQueueConfiguration
 import no.ndla.taxonomysync.domain.RequestQueueStatus
-import no.ndla.taxonomysync.dtos.PoisonPill
-import no.ndla.taxonomysync.dtos.Queueable
-import no.ndla.taxonomysync.dtos.TaxonomyApiRequest
+import no.ndla.taxonomysync.domain.PoisonPill
+import no.ndla.taxonomysync.domain.Queueable
+import no.ndla.taxonomysync.domain.TaxonomyApiRequest
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.concurrent.BlockingQueue
@@ -33,10 +33,6 @@ class RequestQueueService(config: RequestQueueConfiguration, private val request
 
     init {
         requestQueue = LinkedBlockingQueue<Queueable>()
-    }
-
-    fun getRequestQueueSizeExcludingPoisonPills(): Int {
-        return requestQueue.count { it is TaxonomyApiRequest }
     }
 
     fun add(request: TaxonomyApiRequest) {
@@ -83,6 +79,10 @@ class RequestQueueService(config: RequestQueueConfiguration, private val request
         } else {
             LOGGER.info("Processing thread is already running, ignoring start request.")
         }
+    }
+
+    private fun getRequestQueueSizeExcludingPoisonPills(): Int {
+        return requestQueue.count { it is TaxonomyApiRequest }
     }
 
     @PreDestroy
