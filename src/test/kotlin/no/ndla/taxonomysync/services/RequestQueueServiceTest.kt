@@ -64,11 +64,12 @@ class RequestQueueServiceTest {
     }
 
     @Test
-    fun queueProcessingEndsWithPoisonPill() {
+    fun queueProcessingEndsOnPoisonPill() {
         Mockito.`when`(poster.postTaxonomyRequestToProd(any()))
                 .thenReturn(ResponseEntity.noContent().build())
 
         val taxonomyApiRequest = TaxonomyApiRequest(method = "POST", path = "/v1/dummy", body = "{}", timestamp = "2001-01-01T11:22:33:444")
+        service.add(taxonomyApiRequest)
         service.add(taxonomyApiRequest)
         service.addPoisonPill()
         assertFalse(service.isProcessingThreadRunning())
@@ -76,6 +77,10 @@ class RequestQueueServiceTest {
         Thread.sleep(50L) //give blocking queue a chance to catch up
         Mockito.verify(poster, times(1)).postTaxonomyRequestToProd(taxonomyApiRequest)
         assertFalse(service.isProcessingThreadRunning())
+        val (currentRequest, currentAttempts, queuedItems) = service.status
+        assertNull(currentRequest)
+        assertEquals(0, currentAttempts)
+        assertEquals(0, queuedItems)
     }
 
     //these are needed to use Mockito.any() in Kotlin as of v1.3...
