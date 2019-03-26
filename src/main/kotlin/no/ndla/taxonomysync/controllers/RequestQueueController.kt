@@ -27,17 +27,17 @@ class RequestQueueController(val dynamoDbService: DynamoDbService, val requestQu
     @PostMapping("/process")
     fun process() {
         val taxonomyQueue = dynamoDbService.getTaxonomyQueue()
-        requestQueueService.startAutomaticEnqueuing()
+        requestQueueService.startQueueProcessing()
         taxonomyQueue.forEach(requestQueueService::add)
         requestQueueService.addPoisonPill()
         while(true){
-            if(requestQueueService.status.currentRequest == null && requestQueueService.status.queuedItems == 0){
+            if(!requestQueueService.isProcessingThreadRunning()){
                 logger.info("Queue empty, resetting table and stopping thread.")
                 dynamoDbService.resetTable()
                 break
             }else{
                 logger.info("Waiting for queue processing to complete")
-                Thread.sleep(10_000)
+                Thread.sleep(1000)
             }
         }
     }

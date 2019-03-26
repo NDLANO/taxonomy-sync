@@ -12,15 +12,15 @@ import org.springframework.http.ResponseEntity
 class RequestQueueServiceTest {
 
     lateinit var service: RequestQueueService
-    lateinit var poster: TaxonomyApiRequestPoster
+    lateinit var sender: TaxonomyApiRequestSender
 
     @Before
     fun setUp() {
         var config = RequestQueueConfiguration()
         config.hostUrl = "nohost"
         config.waitTimeBetweenRetries = 10
-        poster = Mockito.mock(TaxonomyApiRequestPoster::class.java)
-        service = RequestQueueService(config, poster)
+        sender = Mockito.mock(TaxonomyApiRequestSender::class.java)
+        service = RequestQueueService(config, sender)
     }
 
     @Test
@@ -53,19 +53,19 @@ class RequestQueueServiceTest {
 
     @Test
     fun queueProcessingCreatesRequests() {
-        Mockito.`when`(poster.postTaxonomyRequestToProd(any()))
+        Mockito.`when`(sender.sendRequestToTargetHost(any()))
                 .thenReturn(ResponseEntity.noContent().build())
 
         val taxonomyApiRequest = TaxonomyApiRequest(method = "POST", path = "/v1/dummy", body = "{}", timestamp = "2001-01-01T11:22:33:444")
         service.add(taxonomyApiRequest)
-        service.startAutomaticEnqueuing()
+        service.startQueueProcessing()
         Thread.sleep(50L) //give blocking queue a chance to catch up
-        Mockito.verify(poster, times(1)).postTaxonomyRequestToProd(taxonomyApiRequest)
+        Mockito.verify(sender, times(1)).sendRequestToTargetHost(taxonomyApiRequest)
     }
 
     @Test
     fun queueProcessingEndsOnPoisonPill() {
-        Mockito.`when`(poster.postTaxonomyRequestToProd(any()))
+        Mockito.`when`(sender.sendRequestToTargetHost(any()))
                 .thenReturn(ResponseEntity.noContent().build())
 
         val taxonomyApiRequest = TaxonomyApiRequest(method = "POST", path = "/v1/dummy", body = "{}", timestamp = "2001-01-01T11:22:33:444")
@@ -73,9 +73,9 @@ class RequestQueueServiceTest {
         service.add(taxonomyApiRequest)
         service.addPoisonPill()
         assertFalse(service.isProcessingThreadRunning())
-        service.startAutomaticEnqueuing()
+        service.startQueueProcessing()
         Thread.sleep(50L) //give blocking queue a chance to catch up
-        Mockito.verify(poster, times(1)).postTaxonomyRequestToProd(taxonomyApiRequest)
+        Mockito.verify(sender, times(1)).sendRequestToTargetHost(taxonomyApiRequest)
         assertFalse(service.isProcessingThreadRunning())
         val (currentRequest, currentAttempts, queuedItems) = service.status
         assertNull(currentRequest)

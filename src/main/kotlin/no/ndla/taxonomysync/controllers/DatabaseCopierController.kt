@@ -22,17 +22,4 @@ class DatabaseCopierController(val databaseCopierService: DatabaseCopierService,
         return databaseCopierService.copySourceToTarget()
     }
 
-    @GetMapping("/insertmock")
-    fun makeStuff(): EventLog {
-        //TODO remove after everything works. This is only for mocking purposes.
-        return dynamoDbService.createTable()
-    }
-
-    @GetMapping
-    fun configTest() {
-        //TODO remove after everything works. This is only for mocking purposes.
-        val waitTimeBetweenRetries: Long = config.waitTimeBetweenRetries
-        println("Connection to config - should be (300000), is: $waitTimeBetweenRetries")
-    }
-
 }

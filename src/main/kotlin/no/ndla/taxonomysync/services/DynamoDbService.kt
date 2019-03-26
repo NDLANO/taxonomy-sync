@@ -16,7 +16,7 @@ class DynamoDbService(val sourceDynamoDatabase: DynamoDB, val config: DynamoDbCo
 
     var table: Table = sourceDynamoDatabase.getTable(config.tableName)
 
-    fun createTable(): EventLog {
+    private fun createTable(): EventLog {
         val report = EventLog()
         report.log.add("Database opprettet")
         report.log.add("Navn = ${config.tableName}")
@@ -56,13 +56,10 @@ class DynamoDbService(val sourceDynamoDatabase: DynamoDB, val config: DynamoDbCo
 
     fun getTaxonomyQueue(): Array<TaxonomyApiRequest> {
         var taxonomyQueue: Array<TaxonomyApiRequest> = arrayOf()
-        table.scan().forEach {
-            taxonomyQueue += TaxonomyApiRequest(
-                    timestamp = it.get("timestamp") as String,
-                    method = it.get("method") as String,
-                    path = it.get("path") as String,
-                    body = it.get("body") as String
-            )
+        table.scan().forEach { item: Item ->
+            taxonomyQueue += with(item) {
+                TaxonomyApiRequest(getString("timestamp"), getString("method"), getString("path"), getString("body"))
+            }
         }
         taxonomyQueue.sortBy { it.timestamp }
         return taxonomyQueue
