@@ -31,6 +31,9 @@ server.port: 5001
 
 target-queue:
   wait-time-between-retries: 10000
+  client-id: ${CLIENT_ID}
+  client-secret: ${CLIENT_SECRET}
+  token-server: ${TOKEN_SERVER}
 
 dynamodb:
   table-name: taxonomy-sync-local
@@ -47,6 +50,8 @@ dynamodb:
 
 spring:
   profiles: test
-    table-name: taxonomy-sync-test
+
+dynamodb:
+  table-name: taxonomy-sync-test
 
 ---

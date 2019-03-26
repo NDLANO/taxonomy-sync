@@ -29,7 +29,7 @@ class RequestQueueService(config: RequestQueueConfiguration, private val request
 
 
     fun add(request: TaxonomyApiRequest) {
-        LOGGER.info("Adding taxonomy API request to local queue {}" + request.toString())
+        LOGGER.info("Adding taxonomy API request to local queue {} $request")
         requestQueue.add(request)
     }
 
@@ -79,7 +79,12 @@ class RequestQueueService(config: RequestQueueConfiguration, private val request
 
     fun stop() {
         autoEnqueueingRunning = false
-        processingThread.interrupt()
+        try {
+            processingThread.interrupt()
+        }catch (e: InterruptedException){
+            LOGGER.info("Nothing to see here.")
+        }
+
 
     }
 

@@ -20,6 +20,7 @@ class RequestQueueController(val dynamoDbService: DynamoDbService, val requestQu
     @PostMapping("/queue")
     @ResponseBody
     fun enqueue(@RequestBody apiRequest: TaxonomyApiRequest): Int {
+        logger.info("Inserting $apiRequest")
         return dynamoDbService.insertRequest(apiRequest)
     }
 
@@ -30,6 +31,7 @@ class RequestQueueController(val dynamoDbService: DynamoDbService, val requestQu
         taxonomyQueue.forEach(requestQueueService::add)
         while(true){
             if(requestQueueService.status.currentRequest == null && requestQueueService.status.queuedItems == 0){
+                logger.info("Queue empty, resetting table and stopping thread.")
                 dynamoDbService.resetTable()
                 requestQueueService.stop()
                 break
