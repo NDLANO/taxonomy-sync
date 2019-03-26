@@ -4,22 +4,22 @@ import com.amazonaws.services.dynamodbv2.document.DynamoDB
 import com.amazonaws.services.dynamodbv2.document.Item
 import com.amazonaws.services.dynamodbv2.document.Table
 import com.amazonaws.services.dynamodbv2.model.*
+import no.ndla.taxonomysync.configurations.DynamoDbConfiguration
 import no.ndla.taxonomysync.dtos.CopyReport
 import no.ndla.taxonomysync.dtos.TaxonomyApiRequest
 import org.springframework.stereotype.Service
 import java.util.*
 
-const val DYNAMODB_TABLE_NAME = "taxosync"
 
 @Service
-class DynamoDbService(val sourceDynamoDatabase: DynamoDB) {
+class DynamoDbService(val sourceDynamoDatabase: DynamoDB, val config: DynamoDbConfiguration) {
 
-    var table: Table = sourceDynamoDatabase.getTable(DYNAMODB_TABLE_NAME)
+    var table: Table = sourceDynamoDatabase.getTable(config.tableName)
 
     fun createTable(): CopyReport {
         val report = CopyReport()
         report.log.add("Database opprettet")
-        report.log.add("Navn = $DYNAMODB_TABLE_NAME")
+        report.log.add("Navn = ${config.tableName}")
 
         val attributeDefinitions = ArrayList<AttributeDefinition>()
         attributeDefinitions.add(AttributeDefinition().withAttributeName("Id").withAttributeType("S"))
@@ -30,7 +30,7 @@ class DynamoDbService(val sourceDynamoDatabase: DynamoDB) {
         keySchema.add(KeySchemaElement().withAttributeName("timestamp").withKeyType(KeyType.RANGE))
 
         val request = CreateTableRequest()
-                .withTableName(DYNAMODB_TABLE_NAME)
+                .withTableName(config.tableName)
                 .withKeySchema(keySchema)
                 .withAttributeDefinitions(attributeDefinitions)
                 .withProvisionedThroughput(ProvisionedThroughput()

@@ -3,8 +3,8 @@ package no.ndla.taxonomysync.services
 
 import no.ndla.taxonomysync.configurations.RequestQueueConfiguration
 import no.ndla.taxonomysync.domain.RequestQueueStatus
-import no.ndla.taxonomysync.dtos.Queueable
 import no.ndla.taxonomysync.dtos.PoisonPill
+import no.ndla.taxonomysync.dtos.Queueable
 import no.ndla.taxonomysync.dtos.TaxonomyApiRequest
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -22,20 +22,25 @@ class RequestQueueService(config: RequestQueueConfiguration, private val request
     private var currentQueueItem: Queueable? = null
     private var currentAttemptCount = 0
     private var processingThread: Thread? = null
+
     val status: RequestQueueStatus
-        get() = RequestQueueStatus(if (currentQueueItem is TaxonomyApiRequest) currentQueueItem as TaxonomyApiRequest else null, currentAttemptCount, getRequestQueueSizeExcludingPoisonPills())
+        get() = RequestQueueStatus(if (currentQueueItem is TaxonomyApiRequest) currentQueueItem as TaxonomyApiRequest
+        else null, currentAttemptCount, getRequestQueueSizeExcludingPoisonPills())
+
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(RequestQueueService::class.java)
+    }
 
     init {
         requestQueue = LinkedBlockingQueue<Queueable>()
     }
 
-    fun getRequestQueueSizeExcludingPoisonPills():Int{
+    fun getRequestQueueSizeExcludingPoisonPills(): Int {
         return requestQueue.count { it is TaxonomyApiRequest }
     }
 
-
     fun add(request: TaxonomyApiRequest) {
-        LOGGER.info("Adding taxonomy API request to local queue {}" + request.toString())
+        LOGGER.info("Adding taxonomy API request to local queue {} $request")
         requestQueue.add(request)
     }
 
@@ -88,10 +93,6 @@ class RequestQueueService(config: RequestQueueConfiguration, private val request
     fun addPoisonPill() {
         requestQueue.add(PoisonPill())
 
-    }
-
-    companion object {
-        private val LOGGER = LoggerFactory.getLogger(RequestQueueService::class.java)
     }
 }
 

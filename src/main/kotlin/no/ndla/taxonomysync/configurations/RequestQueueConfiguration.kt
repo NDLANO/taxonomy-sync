@@ -1,12 +1,17 @@
 package no.ndla.taxonomysync.configurations
 
+import no.ndla.taxonomysync.dtos.Authentication
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-@ConfigurationProperties(prefix = "requestqueue")
+@ConfigurationProperties(prefix = "target-queue")
 class RequestQueueConfiguration {
-    var enabled: Boolean = false
-    lateinit var targetHost: String
+    lateinit var hostUrl: String
+    lateinit var clientId: String
+    lateinit var clientSecret: String
+    lateinit var tokenServer: String
+    var authentication: Authentication? = null
+    var lastTokenUpdate: Long? = null
     var waitTimeBetweenRetries: Long = 0
 }

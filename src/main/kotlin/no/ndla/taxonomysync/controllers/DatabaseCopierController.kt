@@ -28,7 +28,7 @@ class DatabaseCopierController(val databaseCopierService: DatabaseCopierService,
         return dynamoDbService.createTable()
     }
 
-    @GetMapping("/test")
+    @GetMapping
     fun configTest() {
         //TODO remove after everything works. This is only for mocking purposes.
         val waitTimeBetweenRetries: Long = config.waitTimeBetweenRetries
