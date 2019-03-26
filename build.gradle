@@ -22,6 +22,8 @@ dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
     // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-dynamodb
     implementation group: 'com.amazonaws', name: 'aws-java-sdk-dynamodb', version: '1.11.513'
+    implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+    implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
 
     compileOnly "org.springframework.boot:spring-boot-configuration-processor"
     runtimeOnly 'org.springframework.boot:spring-boot-devtools'
