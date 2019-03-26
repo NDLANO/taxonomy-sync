@@ -28,10 +28,10 @@ class RequestQueueController(val dynamoDbService: DynamoDbService, val requestQu
         val taxonomyQueue = dynamoDbService.getTaxonomyQueue()
         requestQueueService.startAutomaticEnqueuing()
         taxonomyQueue.forEach(requestQueueService::add)
+        requestQueueService.addPoisonPill()
         while(true){
             if(requestQueueService.status.currentRequest == null && requestQueueService.status.queuedItems == 0){
                 dynamoDbService.resetTable()
-                requestQueueService.stop()
                 break
             }else{
                 logger.info("Waiting for queue processing to complete")

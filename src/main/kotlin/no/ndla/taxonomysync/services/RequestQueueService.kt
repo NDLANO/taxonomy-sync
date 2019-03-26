@@ -3,28 +3,34 @@ package no.ndla.taxonomysync.services
 
 import no.ndla.taxonomysync.configurations.RequestQueueConfiguration
 import no.ndla.taxonomysync.domain.RequestQueueStatus
+import no.ndla.taxonomysync.dtos.Queueable
+import no.ndla.taxonomysync.dtos.PoisonPill
 import no.ndla.taxonomysync.dtos.TaxonomyApiRequest
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-
-import javax.annotation.PreDestroy
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
+import javax.annotation.PreDestroy
+import kotlin.concurrent.thread
 
 
 @Service
 class RequestQueueService(config: RequestQueueConfiguration, private val requestPoster: TaxonomyApiRequestPoster) {
     private val waitTimeBetweenRetries: Long = config.waitTimeBetweenRetries
     private var autoEnqueueingRunning: Boolean = false
-    private val requestQueue: BlockingQueue<TaxonomyApiRequest>
-    private var currentRequest: TaxonomyApiRequest? = null
+    private val requestQueue: BlockingQueue<Queueable>
+    private var currentQueueItem: Queueable? = null
     private var currentAttemptCount = 0
-    private lateinit var processingThread: Thread
+    private var processingThread: Thread? = null
     val status: RequestQueueStatus
-        get() = RequestQueueStatus(currentRequest, currentAttemptCount, requestQueue.size)
+        get() = RequestQueueStatus(if (currentQueueItem is TaxonomyApiRequest) currentQueueItem as TaxonomyApiRequest else null, currentAttemptCount, getRequestQueueSizeExcludingPoisonPills())
 
     init {
-        requestQueue = LinkedBlockingQueue<TaxonomyApiRequest>()
+        requestQueue = LinkedBlockingQueue<Queueable>()
+    }
+
+    fun getRequestQueueSizeExcludingPoisonPills():Int{
+        return requestQueue.count { it is TaxonomyApiRequest }
     }
 
 
@@ -33,59 +39,59 @@ class RequestQueueService(config: RequestQueueConfiguration, private val request
         requestQueue.add(request)
     }
 
-
+    @Synchronized
     fun startAutomaticEnqueuing() {
-        autoEnqueueingRunning = true
-        processingThread = Thread {
-
-            while (autoEnqueueingRunning) {
-                try {
-                    if (currentRequest == null) {
-                        currentRequest = requestQueue.take()
-                    }
-                    LOGGER.info("Attempting to enqueue request in sync queue: " + currentRequest!!.toString() + " (" + requestQueue.size + " items remaining in local queue")
+        if (processingThread == null || processingThread!!.isAlive) {
+            autoEnqueueingRunning = true
+            processingThread = thread(start = true) {
+                checkQueue@
+                while (autoEnqueueingRunning) {
                     try {
+                        if (currentQueueItem == null) {
+                            currentQueueItem = requestQueue.take()
+                            if (currentQueueItem is PoisonPill) {
+                                autoEnqueueingRunning = false
+                                continue@checkQueue
+                            }
+                        }
+                        LOGGER.info("Attempting to enqueue request in sync queue: " + currentQueueItem!!.toString() + " (" + requestQueue.size + " items remaining in local queue")
                         ++currentAttemptCount
-                        val response = requestPoster.postTaxonomyRequestToProd(currentRequest!!)
+                        val response = requestPoster.postTaxonomyRequestToProd(currentQueueItem!! as TaxonomyApiRequest)
                         if (response.statusCode.is2xxSuccessful) {
                             LOGGER.info("Sync queue insert success after $currentAttemptCount attempts")
-                            currentRequest = null
+                            currentQueueItem = null
                             currentAttemptCount = 0
                         } else {
                             LOGGER.error("Received non-success HTTP code ({}) when posting a Taxonomy API Request to sync, will retry in {} seconds", response.statusCode.value(), waitTimeBetweenRetries / 1000)
                             Thread.sleep(waitTimeBetweenRetries)
                         }
+                    } catch (e: InterruptedException) {
+                        LOGGER.warn("Thread was interrupted, retrying", e)
                     } catch (e: Exception) {
                         LOGGER.error("An error occurred when posting a Taxonomy API Request to sync, will retry in {} seconds", waitTimeBetweenRetries / 1000, e)
                         Thread.sleep(waitTimeBetweenRetries)
                     }
-
-                } catch (e: InterruptedException) {
-                    LOGGER.warn("Thread was interrupted, retrying", e)
                 }
-
+                LOGGER.info("Queue processing thread ends")
             }
 
+        } else {
+            LOGGER.info("Processing thread is already running, ignoring start request.")
         }
-        processingThread.start()
-
     }
-
 
     @PreDestroy
     private fun preDestroy() {
-        autoEnqueueingRunning = false
+        addPoisonPill()
     }
 
-    fun stop() {
-        autoEnqueueingRunning = false
-        processingThread.interrupt()
+    fun addPoisonPill() {
+        requestQueue.add(PoisonPill())
 
     }
 
     companion object {
-
-
         private val LOGGER = LoggerFactory.getLogger(RequestQueueService::class.java)
     }
 }
+
