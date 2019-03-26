@@ -1,5 +1,7 @@
 package no.ndla.taxonomysync.controllers
 
+import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiParam
 import no.ndla.taxonomysync.services.RequestQueueService
 import no.ndla.taxonomysync.domain.TaxonomyApiRequest
 import no.ndla.taxonomysync.services.DynamoDbService
@@ -13,18 +15,21 @@ class RequestQueueController(val dynamoDbService: DynamoDbService, val requestQu
     var logger = LoggerFactory.getLogger(RequestQueueController::class.java)
 
     @GetMapping("/queue")
+    @ApiOperation(value = "Get the current draft queue")
     fun getQueue():Array<TaxonomyApiRequest>{
         return dynamoDbService.getTaxonomyQueue()
     }
 
     @PostMapping("/queue")
+    @ApiOperation(value = "Create a new queue element")
     @ResponseBody
-    fun enqueue(@RequestBody apiRequest: TaxonomyApiRequest): Int {
+    fun enqueue(@ApiParam(name = "API Request", value = "The new api request to be added to queue") @RequestBody apiRequest: TaxonomyApiRequest): Int {
         logger.info("Inserting $apiRequest")
         return dynamoDbService.insertRequest(apiRequest)
     }
 
     @PostMapping("/process")
+    @ApiOperation(value = "Process current draft queue", notes = "This will post to selected target environment")
     fun process() {
         val taxonomyQueue = dynamoDbService.getTaxonomyQueue()
         requestQueueService.startQueueProcessing()
