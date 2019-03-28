@@ -1,10 +1,13 @@
 package no.ndla.taxonomysync.controllers
 
-import no.ndla.taxonomysync.domain.EventLog
 import io.swagger.annotations.ApiOperation
+import no.ndla.taxonomysync.domain.EventLog
 import no.ndla.taxonomysync.services.DatabaseCopierService
 import no.ndla.taxonomysync.services.DynamoDbService
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.bind.annotation.RestController
 
 
 @RestController
@@ -20,6 +23,8 @@ class DatabaseCopierController(val databaseCopierService: DatabaseCopierService,
         return databaseCopierService.copySourceToTarget()
     }
 
-
-
+    @PostMapping("/init")
+    fun initializeDatabase(): Unit {
+        dynamoDbService.createTable()
+    }
 }

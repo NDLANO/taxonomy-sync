@@ -1,5 +1,9 @@
 
-server.port: 5000
+
+server:
+  port: 5000
+  servlet:
+    context-path: /api
 
 # Source database must be defined with environment variables
 source_db: taxonomy
@@ -20,6 +24,7 @@ dynamodb:
 
 target-queue:
   host-url: ${SYNC_TARGET}
+  client-id: ${CLIENT_ID}
   wait-time-between-retries: 300000
 
 ---
@@ -31,7 +36,6 @@ server.port: 5001
 
 target-queue:
   wait-time-between-retries: 10000
-  client-id: ${CLIENT_ID}
   client-secret: ${CLIENT_SECRET}
   token-server: ${TOKEN_SERVER}
 

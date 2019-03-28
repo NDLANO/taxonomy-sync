@@ -16,7 +16,8 @@ class DynamoDbService(val sourceDynamoDatabase: DynamoDB, val config: DynamoDbCo
 
     var table: Table = sourceDynamoDatabase.getTable(config.tableName)
 
-    private fun createTable(): EventLog {
+
+    fun createTable(): EventLog {
         val report = EventLog()
         report.log.add("Database opprettet")
         report.log.add("Navn = ${config.tableName}")
