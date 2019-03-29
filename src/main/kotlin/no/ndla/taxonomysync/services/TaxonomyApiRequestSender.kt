@@ -29,9 +29,24 @@ class TaxonomyApiRequestSender(val config: RequestQueueConfiguration) {
                 set("Authorization", "Bearer ${config.authentication!!.access_token}")
             }
         }
+
         LOGGER.info("Endpoint is $syncEndpoint${request.path}")
         LOGGER.info("Method is ${request.method}")
-        return restTemplate.exchange(URI(syncEndpoint + request.path), getMethod(request.method), HttpEntity(request.body, httpHeaders), String::class.java)
+        return restTemplate.exchange(
+                URI(syncEndpoint + request.path),
+                getMethod(request.method),
+                getEntity(request.method, request.body, httpHeaders),
+                String::class.java
+        )
+    }
+
+    private fun getEntity(method: String, body: String, httpHeaders: HttpHeaders): HttpEntity<*>? {
+        return when (method) {
+            "PUT" -> HttpEntity(body, httpHeaders)
+            "POST" -> HttpEntity(body, httpHeaders)
+            "DELETE" -> HttpEntity(null, httpHeaders)
+            else -> throw RuntimeException("Unsupported method")
+        }
     }
 
     private fun getMethod(method: String): HttpMethod {
@@ -59,7 +74,6 @@ class TaxonomyApiRequestSender(val config: RequestQueueConfiguration) {
                 println("401 Wrong Credentials? You are using the environment: $token_server")
             }
         }
-
     }
 
     private fun shouldUpdateToken(lastTokenUpdate: Long?, authentication: Authentication?): Boolean {
