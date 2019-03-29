@@ -42,7 +42,7 @@ class RequestQueueService(config: RequestQueueConfiguration, private val request
 
     @Synchronized
     fun startQueueProcessing() {
-        if (processingThread == null || processingThread!!.isAlive) {
+        if (processingThread == null || !(processingThread!!.isAlive)) {
             autoEnqueueingRunning = true
             processingThread = thread(start = true) {
                 checkQueue@
@@ -50,22 +50,23 @@ class RequestQueueService(config: RequestQueueConfiguration, private val request
                     try {
                         if (currentQueueItem == null) {
                             currentQueueItem = requestQueue.take()
-                            if (currentQueueItem is PoisonPill) {
-                                LOGGER.info("PoisonPill encountered, ending queue processing")
-                                autoEnqueueingRunning = false
-                                continue@checkQueue
-                            }
                         }
-                        LOGGER.info("Attempting to post request to target host: ${currentQueueItem!!} - (${getRequestQueueSizeExcludingPoisonPills()} items remaining in local queue")
-                        ++currentAttemptCount
-                        val response = requestSender.sendRequestToTargetHost(currentQueueItem!! as TaxonomyApiRequest)
-                        if (response.statusCode.is2xxSuccessful) {
-                            LOGGER.info("Sync queue insert success after $currentAttemptCount attempts")
-                            currentQueueItem = null
-                            currentAttemptCount = 0
+                        if (currentQueueItem is PoisonPill) {
+                            LOGGER.info("PoisonPill encountered, ending queue processing")
+                            autoEnqueueingRunning = false
+                            continue@checkQueue
                         } else {
-                            LOGGER.error("Received non-success HTTP code (${response.statusCode.value()}) when posting a Taxonomy API Request to sync, will retry in ${waitTimeBetweenRetries / 1000} seconds")
-                            Thread.sleep(waitTimeBetweenRetries)
+                            LOGGER.info("Attempting to post request to target host: ${currentQueueItem!!} - (${getRequestQueueSizeExcludingPoisonPills()} items remaining in local queue")
+                            ++currentAttemptCount
+                            val response = requestSender.sendRequestToTargetHost(currentQueueItem!! as TaxonomyApiRequest)
+                            if (response.statusCode.is2xxSuccessful) {
+                                LOGGER.info("Sync queue insert success after $currentAttemptCount attempts")
+                                currentQueueItem = null
+                                currentAttemptCount = 0
+                            } else {
+                                LOGGER.error("Received non-success HTTP code (${response.statusCode.value()}) when posting a Taxonomy API Request to sync, will retry in ${waitTimeBetweenRetries / 1000} seconds")
+                                Thread.sleep(waitTimeBetweenRetries)
+                            }
                         }
                     } catch (e: InterruptedException) {
                         LOGGER.warn("Thread was interrupted, retrying", e)
@@ -76,7 +77,7 @@ class RequestQueueService(config: RequestQueueConfiguration, private val request
                 }
                 LOGGER.info("Queue processing thread ends")
             }
-
+            processingThread = null
         } else {
             LOGGER.info("Processing thread is already running, ignoring start request.")
         }

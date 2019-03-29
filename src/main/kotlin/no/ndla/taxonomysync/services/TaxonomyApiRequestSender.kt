@@ -31,6 +31,7 @@ class TaxonomyApiRequestSender(val config: RequestQueueConfiguration) {
         }
         LOGGER.info("Endpoint is $syncEndpoint${request.path}")
         LOGGER.info("Method is ${request.method}")
+        LOGGER.info("Body is ${request.body}")
         return restTemplate.exchange(URI(syncEndpoint + request.path), getMethod(request.method), HttpEntity(request.body, httpHeaders), String::class.java)
     }
 

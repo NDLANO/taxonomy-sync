@@ -25,7 +25,7 @@ dynamodb:
 target-queue:
   host-url: ${SYNC_TARGET}
   client-id: ${CLIENT_ID}
-  wait-time-between-retries: 300000
+  wait-time-between-retries: 30000
 
 ---
 
