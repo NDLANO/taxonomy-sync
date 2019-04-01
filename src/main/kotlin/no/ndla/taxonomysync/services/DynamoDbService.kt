@@ -3,24 +3,44 @@ package no.ndla.taxonomysync.services
 import com.amazonaws.services.dynamodbv2.document.DynamoDB
 import com.amazonaws.services.dynamodbv2.document.Item
 import com.amazonaws.services.dynamodbv2.document.Table
+import com.amazonaws.services.dynamodbv2.document.TableCollection
 import com.amazonaws.services.dynamodbv2.model.*
 import no.ndla.taxonomysync.configurations.DynamoDbConfiguration
 import no.ndla.taxonomysync.domain.EventLog
 import no.ndla.taxonomysync.domain.TaxonomyApiRequest
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
+import javax.annotation.PostConstruct
 
 
 @Service
 class DynamoDbService(val sourceDynamoDatabase: DynamoDB, val config: DynamoDbConfiguration) {
 
-    var table: Table = sourceDynamoDatabase.getTable(config.tableName)
+    lateinit var table: Table
 
-    private fun createTable(): EventLog {
-        val report = EventLog()
-        report.log.add("Database opprettet")
-        report.log.add("Navn = ${config.tableName}")
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(DynamoDbService::class.java)
+    }
 
+    @PostConstruct
+    private fun init() {
+        val tables: TableCollection<ListTablesResult> = sourceDynamoDatabase.listTables()
+        var exists = false
+        for(table: Table in tables){
+            if(table.tableName == config.tableName){
+                exists = true
+                this.table = table
+                break
+            }
+        }
+        if(!exists){
+            createTable()
+        }
+    }
+
+    private fun createTable(): Table {
+        LOGGER.info("Database opprettet, Navn: ${config.tableName}")
         val attributeDefinitions = ArrayList<AttributeDefinition>()
         attributeDefinitions.add(AttributeDefinition().withAttributeName("Id").withAttributeType("S"))
         attributeDefinitions.add(AttributeDefinition().withAttributeName("timestamp").withAttributeType("S"))
@@ -48,7 +68,7 @@ class DynamoDbService(val sourceDynamoDatabase: DynamoDB, val config: DynamoDbCo
         val item = Item()
                 .withPrimaryKey("Id", uuid, "timestamp", apiRequest.timestamp)
                 .withString("timestamp", apiRequest.timestamp)
-                .withString("body", apiRequest.body)
+                .withString("body", apiRequest.body!!)
                 .withString("path", apiRequest.path)
                 .withString("method", apiRequest.method)
         return table.putItem(item).putItemResult.sdkHttpMetadata.httpStatusCode

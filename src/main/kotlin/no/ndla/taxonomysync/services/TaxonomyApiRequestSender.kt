@@ -35,7 +35,7 @@ class TaxonomyApiRequestSender(val config: RequestQueueConfiguration) {
         return restTemplate.exchange(
                 URI(syncEndpoint + request.path),
                 getMethod(request.method),
-                getEntity(request.method, request.body, httpHeaders),
+                getEntity(request.method, request.body!!, httpHeaders),
                 String::class.java
         )
     }
