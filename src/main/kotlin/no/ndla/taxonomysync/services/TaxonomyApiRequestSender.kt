@@ -24,7 +24,7 @@ class TaxonomyApiRequestSender(val config: RequestQueueConfiguration) {
         val httpHeaders = HttpHeaders()
         httpHeaders.contentType = MediaType.APPLICATION_JSON
         if (config.clientId != "ITEST") {
-            getAccessToken(config.clientId, config.clientSecret, config.tokenServer)
+            fetchAccessTokenIfNecessary(config.clientId, config.clientSecret, config.tokenServer)
             httpHeaders.run {
                 set("Authorization", "Bearer ${config.authentication!!.access_token}")
             }
@@ -32,7 +32,21 @@ class TaxonomyApiRequestSender(val config: RequestQueueConfiguration) {
         LOGGER.info("Endpoint is $syncEndpoint${request.path}")
         LOGGER.info("Method is ${request.method}")
         LOGGER.info("Body is ${request.body}")
-        return restTemplate.exchange(URI(syncEndpoint + request.path), getMethod(request.method), HttpEntity(request.body, httpHeaders), String::class.java)
+        return restTemplate.exchange(
+                URI(syncEndpoint + request.path),
+                getMethod(request.method),
+                getEntity(request.method, request.body, httpHeaders),
+                String::class.java
+        )
+    }
+
+    private fun getEntity(method: String, body: String, httpHeaders: HttpHeaders): HttpEntity<*>? {
+        return when (method) {
+            "PUT" -> HttpEntity(body, httpHeaders)
+            "POST" -> HttpEntity(body, httpHeaders)
+            "DELETE" -> HttpEntity(null, httpHeaders)
+            else -> throw RuntimeException("Unsupported method")
+        }
     }
 
     private fun getMethod(method: String): HttpMethod {
@@ -44,7 +58,7 @@ class TaxonomyApiRequestSender(val config: RequestQueueConfiguration) {
         }
     }
 
-    private fun getAccessToken(clientId: String, clientSecret: String, token_server: String) {
+    private fun fetchAccessTokenIfNecessary(clientId: String, clientSecret: String, token_server: String) {
         if(shouldUpdateToken(config.lastTokenUpdate, config.authentication)){
 
             val cmd = AuthenticationRequest(clientId, clientSecret)
@@ -55,12 +69,11 @@ class TaxonomyApiRequestSender(val config: RequestQueueConfiguration) {
                 config.authentication = response.body!!
                 config.lastTokenUpdate = Instant.now().toEpochMilli()
             } catch (e: IllegalStateException) {
-                println("401 Wrong Credentials? You are using the environment: $token_server")
+                throw RuntimeException("Cannot fetch new access token", e)
             } catch (e: HttpClientErrorException) {
-                println("401 Wrong Credentials? You are using the environment: $token_server")
+                throw RuntimeException("Cannot fetch new access token", e)
             }
         }
-
     }
 
     private fun shouldUpdateToken(lastTokenUpdate: Long?, authentication: Authentication?): Boolean {
