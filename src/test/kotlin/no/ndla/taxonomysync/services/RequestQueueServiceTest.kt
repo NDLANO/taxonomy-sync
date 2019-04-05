@@ -75,7 +75,7 @@ class RequestQueueServiceTest {
         assertFalse(service.isProcessingThreadRunning())
         service.startQueueProcessing()
         Thread.sleep(50L) //give blocking queue a chance to catch up
-        Mockito.verify(sender, times(1)).sendRequestToTargetHost(taxonomyApiRequest)
+        Mockito.verify(sender, times(2)).sendRequestToTargetHost(taxonomyApiRequest)
         assertFalse(service.isProcessingThreadRunning())
         val (currentRequest, currentAttempts, queuedItems) = service.status
         assertNull(currentRequest)

@@ -25,7 +25,9 @@ dynamodb:
 target-queue:
   host-url: ${SYNC_TARGET}
   client-id: ${CLIENT_ID}
-  wait-time-between-retries: 30000
+  client-secret: ${CLIENT_SECRET}
+  token-server: ${TOKEN_SERVER}
+  wait-time-between-retries: 300000
 
 ---
 
@@ -36,8 +38,6 @@ server.port: 5001
 
 target-queue:
   wait-time-between-retries: 10000
-  client-secret: ${CLIENT_SECRET}
-  token-server: ${TOKEN_SERVER}
 
 dynamodb:
   table-name: taxonomy-sync-local
