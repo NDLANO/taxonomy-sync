@@ -36,7 +36,7 @@ class RequestQueueController(val dynamoDbService: DynamoDbService, val requestQu
         taxonomyQueue.forEach(requestQueueService::add)
         requestQueueService.addPoisonPill()
         while(true){
-            if(!requestQueueService.isProcessingThreadRunning()){
+            if(!requestQueueService.processing){
                 logger.info("Queue empty, resetting table and stopping thread.")
                 dynamoDbService.resetTable()
                 break

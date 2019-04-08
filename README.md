@@ -25,3 +25,9 @@ Kjør DynamoDB docker lokalt på port 8000:
 IntelliJ -> Settings -> Build, Execution, Deployment -> Build tools -> Gradle -> Runner:
 
 `Check - 'Delegate IDE build/run actions to gradle'`
+
+
+# Running with taxonomy-API
+
+This project is intended to run as an application that sits between two instances of taxonomy-api. One instance of the 
+taxonomy-api service would be running in draft mode, and the other would be a production service. 

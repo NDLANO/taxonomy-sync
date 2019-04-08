@@ -23,8 +23,5 @@ class DatabaseCopierController(val databaseCopierService: DatabaseCopierService,
         return databaseCopierService.copySourceToTarget()
     }
 
-    @PostMapping("/init")
-    fun initializeDatabase(): Unit {
-        dynamoDbService.createTable()
-    }
+   
 }

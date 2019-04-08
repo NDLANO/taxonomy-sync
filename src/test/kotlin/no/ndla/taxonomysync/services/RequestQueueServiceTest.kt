@@ -72,11 +72,11 @@ class RequestQueueServiceTest {
         service.add(taxonomyApiRequest)
         service.add(taxonomyApiRequest)
         service.addPoisonPill()
-        assertFalse(service.isProcessingThreadRunning())
+        assertFalse(service.processing)
         service.startQueueProcessing()
         Thread.sleep(50L) //give blocking queue a chance to catch up
-        Mockito.verify(sender, times(1)).sendRequestToTargetHost(taxonomyApiRequest)
-        assertFalse(service.isProcessingThreadRunning())
+        Mockito.verify(sender, times(2)).sendRequestToTargetHost(taxonomyApiRequest)
+        assertFalse(service.processing)
         val (currentRequest, currentAttempts, queuedItems) = service.status
         assertNull(currentRequest)
         assertEquals(0, currentAttempts)
@@ -90,5 +90,6 @@ class RequestQueueServiceTest {
         return uninitialized()
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun <T> uninitialized(): T = null as T
 }
