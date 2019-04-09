@@ -6,7 +6,6 @@ import com.amazonaws.services.dynamodbv2.document.Table
 import com.amazonaws.services.dynamodbv2.document.TableCollection
 import com.amazonaws.services.dynamodbv2.model.*
 import no.ndla.taxonomysync.configurations.DynamoDbConfiguration
-import no.ndla.taxonomysync.domain.EventLog
 import no.ndla.taxonomysync.domain.TaxonomyApiRequest
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -27,14 +26,14 @@ class DynamoDbService(val sourceDynamoDatabase: DynamoDB, val config: DynamoDbCo
     private fun init() {
         val tables: TableCollection<ListTablesResult> = sourceDynamoDatabase.listTables()
         var exists = false
-        for(table: Table in tables){
-            if(table.tableName == config.tableName){
+        for (table: Table in tables) {
+            if (table.tableName == config.tableName) {
                 exists = true
                 this.table = table
                 break
             }
         }
-        if(!exists){
+        if (!exists) {
             createTable()
         }
     }
@@ -64,7 +63,11 @@ class DynamoDbService(val sourceDynamoDatabase: DynamoDB, val config: DynamoDbCo
     }
 
     fun insertRequest(apiRequest: TaxonomyApiRequest): Int {
+        if (apiRequest.body.isNullOrEmpty()) {
+            apiRequest.body = "delete"
+        }
         val uuid: String = UUID.randomUUID().toString()
+
         val item = Item()
                 .withPrimaryKey("Id", uuid, "timestamp", apiRequest.timestamp)
                 .withString("timestamp", apiRequest.timestamp)
