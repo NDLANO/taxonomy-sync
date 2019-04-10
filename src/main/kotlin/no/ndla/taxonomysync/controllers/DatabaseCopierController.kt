@@ -1,20 +1,29 @@
 package no.ndla.taxonomysync.controllers
 
-import no.ndla.taxonomysync.CopyReport
+import io.swagger.annotations.ApiOperation
+import no.ndla.taxonomysync.domain.EventLog
 import no.ndla.taxonomysync.services.DatabaseCopierService
-import org.springframework.stereotype.Controller
+import no.ndla.taxonomysync.services.DynamoDbService
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.bind.annotation.RestController
 
 
-@Controller("/database")
-class DatabaseCopierController(val databaseCopierService: DatabaseCopierService) {
 
+@RestController
+@RequestMapping("database")
+class DatabaseCopierController(val databaseCopierService: DatabaseCopierService,
+                               val dynamoDbService: DynamoDbService) {
 
     @PostMapping("/resetdraft")
     @ResponseBody
-    fun resetDraftDatabase(): CopyReport {
+    @ApiOperation(value = "Resets the draft", notes = "Only use when you want to delete everything. This will overwrite the draft db with the target environment db")
+    fun resetDraftDatabase(): EventLog {
+        dynamoDbService.resetTable()
         return databaseCopierService.copySourceToTarget()
     }
+
+
 
 }

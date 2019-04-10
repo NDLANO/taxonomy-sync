@@ -1,6 +1,6 @@
 package no.ndla.taxonomysync.services
 
-import no.ndla.taxonomysync.CopyReport
+import no.ndla.taxonomysync.domain.EventLog
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
@@ -28,22 +28,22 @@ class DatabaseCopierService(@Qualifier("source") val sourceDatabase: DataSource,
             "subject_topic_id_seq", "subject_translation_id_seq", "topic_filter_id_seq", "topic_id_seq",
             "topic_resource_id_seq", "topic_subtopic_id_seq", "topic_translation_id_seq")
 
-    fun copySourceToTarget(): CopyReport {
-        val report = CopyReport()
+    fun copySourceToTarget(): EventLog {
+        val report = EventLog()
         truncateTargetTables(report)
         copyTables(report)
         copySequences(report)
         return report
     }
 
-    private fun truncateTargetTables(report: CopyReport) {
+    private fun truncateTargetTables(report: EventLog) {
         tables.reversed().forEach { table ->
             report.log.add("Truncating target table: $table")
             targetTemplate.execute("truncate table $table cascade;")
         }
     }
 
-    private fun copyTables(report: CopyReport) {
+    private fun copyTables(report: EventLog) {
         tables.forEach { table ->
             var rowCount = 0
             val values = arrayListOf<String>()
@@ -69,7 +69,7 @@ class DatabaseCopierService(@Qualifier("source") val sourceDatabase: DataSource,
         }
     }
 
-    private fun copySequences(report: CopyReport) {
+    private fun copySequences(report: EventLog) {
         sequences.forEach { sequence ->
             val table = sequence.substring(0, sequence.indexOf("_id"))
             val maxId = sourceTemplate.queryForObject("select max(id) from $table", Int::class.java) ?: 1
